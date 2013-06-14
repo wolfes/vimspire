@@ -36,11 +36,11 @@ else
 endif
 
 let s:default_opts = {
-	\	'tabspire_client_id': '"PUT_YOUR_TABSPIRE_CLIENT_ID_HERE"',
+	\	'tabspire_client_id': '"CLIENT_ID"',
 	\	'vimspire_enabled': 1,
 	\	'vimspire_map_keys': 1,
-	\	'vimspire_local_host': '"http://localhost:3000/api/0/"',
-	\	'vimspire_cmdsync_host': '"http://cmdsync.com:3000/api/0/"',
+	\	'vimspire_local_host': '"http://localhost:3000/tabspire/api/0/"',
+	\	'vimspire_cmdsync_host': '"http://cmdsync.com:3000/tabspire/api/0/"',
 	\	'vimspire_port': 3000,
 	\	'vimspire_map_prefix': '"<Leader>"',
 	\	'vimspire_auto_connect': 1
@@ -60,16 +60,14 @@ python << EOF
 import urllib, urllib2, vim, subprocess
 REMOTE_TABSPIRE_REQUEST_URL = (
 	vim.eval('g:vimspire_cmdsync_host') +
-	"tabspire/" +
 	vim.eval('g:tabspire_client_id'))
 
 LOCAL_TABSPIRE_REQUEST_URL = (
 	vim.eval('g:vimspire_local_host') +
-	"tabspire/" +
 	vim.eval('g:tabspire_client_id'))
 
-#TABSPIRE_REQUEST_URL = LOCAL_TABSPIRE_REQUEST_URL
-TABSPIRE_REQUEST_URL = REMOTE_TABSPIRE_REQUEST_URL
+TABSPIRE_REQUEST_URL = LOCAL_TABSPIRE_REQUEST_URL
+#TABSPIRE_REQUEST_URL = REMOTE_TABSPIRE_REQUEST_URL
 
 def postCmd(params, method):
 	"""Post a command with params to server."""
