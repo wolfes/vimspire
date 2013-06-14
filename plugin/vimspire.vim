@@ -70,15 +70,16 @@ TABSPIRE_REQUEST_URL = LOCAL_TABSPIRE_REQUEST_URL
 #TABSPIRE_REQUEST_URL = REMOTE_TABSPIRE_REQUEST_URL
 
 def postCmd(params, method):
-	"""Post a command with params to server."""
-	request_url = TABSPIRE_REQUEST_URL + method
-	params = urllib.urlencode(params);
-	try:
-		response = urllib2.urlopen(request_url, params)
-		return response
-	except Exception, e:
-		print e
-	return {}
+    """Post a command with params to server."""
+    request_url = TABSPIRE_REQUEST_URL + method
+    params = urllib.urlencode(params);
+    headers = {"Content-type": "application/x-www-form-urlencoded"}
+    try:
+        response = urllib2.urlopen(request_url, params, headers)
+        return response
+    except Exception, e:
+        print e
+    return {}
 EOF
 
 function! SelectServer(index)
