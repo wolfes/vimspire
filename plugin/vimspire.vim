@@ -74,8 +74,9 @@ def postCmd(params, method):
     request_url = TABSPIRE_REQUEST_URL + method
     params = urllib.urlencode(params);
     headers = {"Content-type": "application/x-www-form-urlencoded"}
+    req = urllib2.Request(request_url, params, headers)
     try:
-        response = urllib2.urlopen(request_url, params, headers)
+        response = urllib2.urlopen(req)
         return response
     except Exception, e:
         print e
