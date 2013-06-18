@@ -66,8 +66,8 @@ LOCAL_TABSPIRE_REQUEST_URL = (
 	vim.eval('g:vimspire_local_host') +
 	vim.eval('g:tabspire_client_id'))
 
-TABSPIRE_REQUEST_URL = LOCAL_TABSPIRE_REQUEST_URL
-#TABSPIRE_REQUEST_URL = REMOTE_TABSPIRE_REQUEST_URL
+#TABSPIRE_REQUEST_URL = LOCAL_TABSPIRE_REQUEST_URL
+TABSPIRE_REQUEST_URL = REMOTE_TABSPIRE_REQUEST_URL
 
 def postCmd(params, method):
     """Post a command with params to server."""
@@ -95,10 +95,8 @@ EOF
 endfunction
 
 " Features (Idea List)
-" Reload tab:
-" - by name.
 " - Set default tab name to reload when
-"    saving (performing 'save/waf' cmd) for this file.
+"   saving (performing 'save/waf' cmd) for this file.
 
 function! SaveAndRebuild()
 	wa
@@ -211,6 +209,7 @@ command! -nargs=0 OpenSelectedURL call OpenSelectedURL ( )
 
 " Create command OpenPB: no args.
 command! -range OpenPB call OpenPB ( )
+
 
 if g:vimspire_map_keys
 	noremap <Leader>ss :SelectServer 
