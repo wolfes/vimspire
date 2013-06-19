@@ -155,6 +155,20 @@ resp = postCmd({}, '/reloadCurrentTab')
 EOF
 endfunction
 
+function! FocusNextTab()
+" Focus tab before currently focused tab in Chrome.
+python << EOF
+resp = postCmd({}, '/focusNextTab')
+EOF
+endfunction
+
+function! FocusPrevTab()
+" Focus tab after currently focused tab in Chrome.
+python << EOF
+resp = postCmd({}, '/focusPrevTab')
+EOF
+endfunction
+
 function! FocusMark(markChar)
 " Focus/Open marked tab in Chrome.
 python << EOF
@@ -210,6 +224,11 @@ command! -nargs=0 OpenSelectedURL call OpenSelectedURL ( )
 " Create command OpenPB: no args.
 command! -range OpenPB call OpenPB ( )
 
+" Create command ReloadCurrentTab: exactly 0 args.
+command! -nargs=0 FocusNextTab call FocusNextTab()
+"
+" Create command ReloadCurrentTab: exactly 0 args.
+command! -nargs=0 FocusPrevTab call FocusPrevTab()
 
 if g:vimspire_map_keys
 	noremap <Leader>ss :SelectServer 
@@ -224,6 +243,8 @@ if g:vimspire_map_keys
 	vnoremap <Leader>p :call OpenPB()<CR>
 	"vnoremap <Leader>p :OpenPB()<CR>
 	noremap <Leader>x :FocusCurrentWindow<CR>
+    noremap <Leader>z :FocusPrevTab<CR>
+    noremap <Leader>c :FocusNextTab<CR>
 endif
 
 
