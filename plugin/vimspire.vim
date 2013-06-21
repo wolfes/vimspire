@@ -58,20 +58,50 @@ endfor
 " Initialize Python Server URL Constants.
 python << EOF
 import urllib, urllib2, vim, subprocess
-REMOTE_TABSPIRE_REQUEST_URL = (
-	vim.eval('g:vimspire_cmdsync_host') +
-	vim.eval('g:tabspire_client_id'))
+REMOTE_TABSPIRE_REQUEST_URL = vim.eval('g:vimspire_cmdsync_host')
+LOCAL_TABSPIRE_REQUEST_URL = vim.eval('g:vimspire_local_host')
 
-LOCAL_TABSPIRE_REQUEST_URL = (
-	vim.eval('g:vimspire_local_host') +
-	vim.eval('g:tabspire_client_id'))
+TABSPIRE_CLIENT_ID = vim.eval('g:tabspire_client_id')
 
 #TABSPIRE_REQUEST_URL = LOCAL_TABSPIRE_REQUEST_URL
 TABSPIRE_REQUEST_URL = REMOTE_TABSPIRE_REQUEST_URL
 
-def postCmd(params, method):
-    """Post a command with params to server."""
-    request_url = TABSPIRE_REQUEST_URL + method
+TABSPIRE_GROUP = ''
+REDIR_TO_GROUP = False
+
+def postCmdToPrivate(params, method):
+    """Post command to a group.
+
+        Args:
+            method: String of requested method, ie: '/openTabByName'.
+    """
+    if REDIR_TO_GROUP:
+        return postCmdToGroup(params, method)
+    params['channel-type'] = 'private'
+    request_url = TABSPIRE_REQUEST_URL + TABSPIRE_CLIENT_ID + method
+    return postCmd(params, request_url)
+
+def postCmdToGroup(params, method):
+    """Post command to a group.
+
+        Args:
+            method: String of requested method, ie: '/openTabByName'.
+    """
+    params['channel-type'] = 'group'
+    request_url = TABSPIRE_REQUEST_URL + TABSPIRE_GROUP + method
+    return postCmd(params, request_url)
+
+def postCmd(params, request_url):
+    """Post request with params to nspire server.
+
+    Request url looks like:
+        http://{hostname}/tabspire/api/0/channel-name/requested-method
+
+    Args:
+        params: Dictionary of request params.
+            Key: 'channel-type' in ['group', 'private'] specifies target type.
+            Other keys transparently passed through to client.
+    """
     params = urllib.urlencode(params);
     headers = {"Content-type": "application/x-www-form-urlencoded"}
     req = urllib2.Request(request_url, params, headers)
@@ -94,6 +124,19 @@ elif index == '1':
 EOF
 endfunction
 
+function! SelectGroup(group_name)
+python << EOF
+TABSPIRE_GROUP = vim.eval('a:group_name')
+REDIR_TO_GROUP = True
+EOF
+endfunction
+
+function! SelectPrivate()
+python << EOF
+REDIR_TO_GROUP = False
+EOF
+endfunction
+
 " Features (Idea List)
 " - Set default tab name to reload when
 "   saving (performing 'save/waf' cmd) for this file.
@@ -107,26 +150,26 @@ endfunction
 
 function! OpenTabByName(name)
 python << EOF
-resp = postCmd({'tabName' : vim.eval('a:name')}, '/openTabByName')
+resp = postCmdToPrivate({'tabName' : vim.eval('a:name')}, '/openTabByName')
 EOF
 endfunction
 
 function! OpenGoogleSearch(query)
 python << EOF
-resp = postCmd({'query' : vim.eval('a:query')}, '/openGoogleSearch')
+resp = postCmdToPrivate({'query' : vim.eval('a:query')}, '/openGoogleSearch')
 EOF
 endfunction
 
 function! OpenURL(url)
 python << EOF
-resp = postCmd({'url' : vim.eval('a:url')}, '/openURL')
+resp = postCmdToPrivate({'url' : vim.eval('a:url')}, '/openURL')
 EOF
 endfunction
 
 function! OpenSelectedURL()
 " Open cWORD in Chrome Tab, through cmdSync->Tabspire.
 python << EOF
-resp = postCmd({'url' : vim.eval('expand(\'<cWORD>\')')}, '/openURL')
+resp = postCmdToPrivate({'url' : vim.eval('expand(\'<cWORD>\')')}, '/openURL')
 EOF
 endfunction
 
@@ -135,7 +178,7 @@ function! OpenPB() range
 " to open the current buffer's selected line as a url.
 :'<,'> !pb
 python << EOF
-resp = postCmd({'url' : vim.current.line}, '/openURL')
+resp = postCmdToPrivate({'url' : vim.current.line}, '/openURL')
 EOF
 " Undo pastebin insertion of url.
 :	normal! u
@@ -144,55 +187,61 @@ endfunction
 function! ReloadTabByName(tabName)
 " Reload a tab by its name in Tabspire.
 python << EOF
-resp = postCmd({'tabName' : vim.eval('a:tabName')}, '/reloadTabByName')
+resp = postCmdToPrivate({'tabName' : vim.eval('a:tabName')}, '/reloadTabByName')
 EOF
 endfunction
 
 function! ReloadCurrentTab()
 " Reload currently focused tab in Chrome.
 python << EOF
-resp = postCmd({}, '/reloadCurrentTab')
+resp = postCmdToPrivate({}, '/reloadCurrentTab')
 EOF
 endfunction
 
 function! FocusNextTab()
 " Focus tab before currently focused tab in Chrome.
 python << EOF
-resp = postCmd({}, '/focusNextTab')
+resp = postCmdToPrivate({}, '/focusNextTab')
 EOF
 endfunction
 
 function! FocusPrevTab()
 " Focus tab after currently focused tab in Chrome.
 python << EOF
-resp = postCmd({}, '/focusPrevTab')
+resp = postCmdToPrivate({}, '/focusPrevTab')
 EOF
 endfunction
 
 function! FocusMark(markChar)
 " Focus/Open marked tab in Chrome.
 python << EOF
-resp = postCmd({'markChar' : vim.eval('a:markChar')}, '/focusMark')
+resp = postCmdToPrivate({'markChar' : vim.eval('a:markChar')}, '/focusMark')
 EOF
 endfunction
 
 function! FocusCurrentWindow()
 " Focus Chrome's 'focused tab', giving focus to Chrome App.
 python << EOF
-resp = postCmd({'foo':'bar'}, '/focusCurrentWindow')
+resp = postCmdToPrivate({'foo':'bar'}, '/focusCurrentWindow')
 EOF
 endfunction
 
 function! ReloadFocusMark(markChar)
 " Reload/Open and Focus marked tab in Chrome.
 python << EOF
-resp = postCmd({'markChar' : vim.eval('a:markChar')}, '/reloadFocusMark')
+resp = postCmdToPrivate({'markChar' : vim.eval('a:markChar')}, '/reloadFocusMark')
 EOF
 endfunction
 
 
 " Select remote=0 or local=1 server to message.
 command! -nargs=1 SelectServer call SelectServer ( '<args>' )
+
+" Select group name for server to message.
+command! -nargs=1 SelectGroup call SelectGroup ( '<args>' )
+
+" Select to use CLIENT_ID for server to message.
+command! -nargs=0 SelectPrivate call SelectPrivate()
 
 " Create command OpenTabByName: exactly 1 tabname.
 command! -nargs=1 OpenTabByName call OpenTabByName ( '<args>' )
@@ -231,8 +280,11 @@ command! -nargs=0 FocusNextTab call FocusNextTab()
 command! -nargs=0 FocusPrevTab call FocusPrevTab()
 
 if g:vimspire_map_keys
-	noremap <Leader>ss :SelectServer 
-	noremap <Leader>m :OpenTabByName 
+    noremap <Leader>vs :SelectServer 
+    noremap <Leader>vg :SelectGroup 
+    noremap <Leader>vp :SelectPrivate<CR>
+
+    noremap <Leader>m :OpenTabByName 
 	noremap <Leader>M :ReloadTabByName 
 	noremap <Leader>j :ReloadFocusMark 
 	noremap <Leader>J :FocusMark 
