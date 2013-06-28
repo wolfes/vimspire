@@ -226,6 +226,20 @@ resp = postCmdToPrivate({'foo':'bar'}, '/focusCurrentWindow')
 EOF
 endfunction
 
+function! FocusLastTab()
+" Focus Chrome's 'focused tab', giving focus to Chrome App.
+python << EOF
+resp = postCmdToPrivate({'foo':'bar'}, '/focusLastTab')
+EOF
+endfunction
+
+function! FocusLastWindow()
+" Focus Chrome's 'focused tab', giving focus to Chrome App.
+python << EOF
+resp = postCmdToPrivate({'foo':'bar'}, '/focusLastWindow')
+EOF
+endfunction
+
 function! ReloadFocusMark(markChar)
 " Reload/Open and Focus marked tab in Chrome.
 python << EOF
@@ -257,6 +271,12 @@ command! -nargs=1 FocusMark call FocusMark ( '<args>' )
 
 " Create command FocusCurrentWindow: exactly 0 args.
 command! -nargs=0 FocusCurrentWindow call FocusCurrentWindow()
+
+" Create command FocusLastTab: exactly 0 args.
+command! -nargs=0 FocusLastTab call FocusLastTab()
+
+" Create command FocusLastWindow: exactly 0 args.
+command! -nargs=0 FocusLastWindow call FocusLastWindow()
 
 " Create command ReloadTabByName: exactly 1 tabname.
 command! -nargs=1 ReloadTabByName call ReloadTabByName ( '<args>' )
@@ -295,6 +315,9 @@ if g:vimspire_map_keys
 	vnoremap <Leader>p :call OpenPB()<CR>
 	"vnoremap <Leader>p :OpenPB()<CR>
 	noremap <Leader>x :FocusCurrentWindow<CR>
+	noremap <Leader>v' :FocusLastTab<CR>
+	noremap <Leader>v" :FocusLastWindow<CR>
+
     noremap <Leader>z :FocusPrevTab<CR>
     noremap <Leader>c :FocusNextTab<CR>
 endif
